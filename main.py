@@ -9,7 +9,8 @@ class MapReduce:
         list_file_lines = f.readlines() # Reads all the lines and return them as each line a string element in a list
         list_file_lines_clean=[]
         for line in list_file_lines:
-            txt = line.replace(" ", "")
+            line = line.lower()
+            txt = line.replace("", "")
             txt1 = txt.replace("\n", "")
             txt2 = txt1.replace(".", "")
             txt3 = txt2.replace("!", "")
@@ -27,34 +28,68 @@ class MapReduce:
 
     def Mapping(self, list_of_lines):
 
-        list_of_letters = []
-        for line in list_of_lines:
-            for x in line:
+        list_of_words = []
+        dict_words_letters = dict()
+        print(list_of_lines)
+        for string in list_of_lines:
+            list_of_words.append(string.split())
+        print( list_of_words)
+        for words in  list_of_words:
+            for  word in words:
+                dict_words_letters[word] = []
+                for letter in word:
+                    dict_words_letters[word].append([letter, 1])
 
-                list_of_letters.append([x, 1])
+        return dict_words_letters
 
-        return list_of_letters
+    def Shuffling(self, dict_words_letters):
 
-    def Shuffling(self, list_of_letters):
 
-        letters_dict = dict()
-        for element in list_of_letters:
-            for letter in element:
-                if (isinstance(letter, str)):
-                    if letter in letters_dict.keys():
-                         letters_dict[letter].append(1)
+        for key in dict_words_letters:
+            for letter in dict_words_letters[key]:
+                print(letter)
 
-                    else:
-                        # letters_dict[letter] = [1]
-                        letters_dict.update({letter: [1]})
+        return FALSE
+        #letters_dict = dict()
+        #for element in list_of_letters:
+            #for letter in element:
+                #if (isinstance(letter, str)):
+                    #if letter in letters_dict.keys():
+                         #letters_dict[letter].append(1)
+
+
+                #else:
+
+                        #letters_dict.update({letter: [1]})
+
+        #return letters_dict
+
+
+
+
+    def Reducing(self,letters_dict):
+
+        for key in letters_dict.keys():
+            #print(key)
+            letters_dict[key] = len(letters_dict[key])
+
 
         return letters_dict
 
-    def Reducing(self):
-        return False
+    def printFinalResult(self, letters_dict):
 
-    def printFinalResult(self):
-        return False
+
+        sum_Letters_Text = 0
+        for key in letters_dict.keys():
+
+            sum_Letters_Text += letters_dict[key]
+
+        dict_porcentages= dict()
+        for key in letters_dict.keys():
+
+            dict_porcentages[key] = (letters_dict[key]/sum_Letters_Text) * 100
+
+        return dict_porcentages
 
 
 
@@ -63,6 +98,10 @@ class MapReduce:
 
 PruebaMapReduce = MapReduce()
 listReturn = PruebaMapReduce.Splitting()
-list_letters = PruebaMapReduce.Mapping(listReturn)
-#print(list_letters)
-print(PruebaMapReduce.Shuffling(list_letters))
+list_words_letters = PruebaMapReduce.Mapping(listReturn)
+print(list_words_letters)
+PruebaMapReduce.Shuffling(list_words_letters)
+#etters_dict = PruebaMapReduce.Shuffling(list_letters)
+#letters_dict = PruebaMapReduce.Reducing(letters_dict)
+
+#print(PruebaMapReduce.printFinalResult(letters_dict))
