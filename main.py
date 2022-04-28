@@ -29,70 +29,91 @@ class MapReduce:
     def Mapping(self, list_of_lines):
 
         list_of_words = []
-        dict_words_letters = dict()
-        print(list_of_lines)
+        list_of_words_letters =[]
+
         for string in list_of_lines:
-            list_of_words.append(string.split())
-        print( list_of_words)
-        for words in  list_of_words:
-            for  word in words:
-                dict_words_letters[word] = []
-                for letter in word:
-                    dict_words_letters[word].append([letter, 1])
-
-        return dict_words_letters
-
-    def Shuffling(self, dict_words_letters):
+            for word in string.split():
+                list_of_words.append([word])
 
 
-        for key in dict_words_letters:
-            for letter in dict_words_letters[key]:
-                print(letter)
-
-        return FALSE
-        #letters_dict = dict()
-        #for element in list_of_letters:
-            #for letter in element:
-                #if (isinstance(letter, str)):
-                    #if letter in letters_dict.keys():
-                         #letters_dict[letter].append(1)
+        print(list_of_words)
+        for word in list_of_words:
+                for element in word:
+                    word_dict = dict()
+                    word_dict[element] = []
+                    for letter in element:
+                        word_dict[element].append([letter,1])
+                    list_of_words_letters.append([word_dict])
 
 
-                #else:
+        return list_of_words_letters
 
-                        #letters_dict.update({letter: [1]})
+    def Shuffling(self, list_dicts_words_letters):
 
-        #return letters_dict
+        for element in list_dicts_words_letters:
+            for word_dict in element:
+                values = list(word_dict.values())
+                list_key = list(word_dict.keys())
+                key = list_key[0]
+
+                for value in word_dict.values():
+                    non_repeated_dict=dict()
+                    for letter_int in value:
+                        for letter in letter_int:
+                            if isinstance(letter,str):
+                                if letter in non_repeated_dict:
+                                    non_repeated_dict[letter].append(1)
+                                else:
+                                    non_repeated_dict[letter] = [1]
+
+                    word_dict[key] = non_repeated_dict
+
+                    #print(non_repeated_dict)
+        print(list_dicts_words_letters)
+
+        return list_dicts_words_letters
+
+    def Reducing(self, list_words_letters_shuffled ):
+
+        for element in list_words_letters_shuffled:
+            for word_dict in element:
+                for value in word_dict.values():
+                    #print(value)
+                    for letter in value:
+                        value[letter] = len(value[letter])
+
+        print(list_words_letters_shuffled)
+        return list_words_letters_shuffled
+
+    def printFinalResult(self, list_words_letters_reduced, ficheroInicial):
+
+        sum_Words = len(list_words_letters_reduceded) #177
+        print(sum_Words)
+        letters_dictionary = dict()
+
+        for element in list_words_letters_shuffled:
+            for word_dict in element:
+                for value in word_dict.values():
+                    # print(value)
+                    for letter in value:
+                        if letter in letters_dictionary:
+                            #print(letters_dictionary[letter])
+                            letters_dictionary[letter] = letters_dictionary[letter] + 1
+                        else:
+                            letters_dictionary[letter]=1
+        for letter in letters_dictionary:
+            numero = (letters_dictionary[letter] / sum_Words) * 100
+            string_numero =str(round(numero, 2)) + "%"
+            #string_numero_percentage = string_numero + "%"
+            letters_dictionary[letter] = string_numero
+
+        print(letters_dictionary)
 
 
-
-
-    def Reducing(self,letters_dict):
-
-        for key in letters_dict.keys():
-            #print(key)
-            letters_dict[key] = len(letters_dict[key])
-
-
-        return letters_dict
-
-    def printFinalResult(self, letters_dict):
-
-
-        sum_Letters_Text = 0
-        for key in letters_dict.keys():
-
-            sum_Letters_Text += letters_dict[key]
-
-        dict_porcentages= dict()
-        for key in letters_dict.keys():
-
-            dict_porcentages[key] = (letters_dict[key]/sum_Letters_Text) * 100
-
-        return dict_porcentages
-
-
-
+        with open("Result.txt", 'w', encoding="UTF-8") as f:
+            f.write(ficheroInicial + '\n')
+            for key, value in letters_dictionary.items():
+                f.write('%s : %s\n' % (key, value))
 
 
 
@@ -100,7 +121,9 @@ PruebaMapReduce = MapReduce()
 listReturn = PruebaMapReduce.Splitting()
 list_words_letters = PruebaMapReduce.Mapping(listReturn)
 print(list_words_letters)
-PruebaMapReduce.Shuffling(list_words_letters)
+list_words_letters_shuffled = PruebaMapReduce.Shuffling(list_words_letters)
+list_words_letters_reduceded = PruebaMapReduce.Reducing(list_words_letters_shuffled)
+print(PruebaMapReduce.printFinalResult(list_words_letters_reduceded, "ArcTecSw_2022_BigData_Practica_Part1_Sample.txt"))
 #etters_dict = PruebaMapReduce.Shuffling(list_letters)
 #letters_dict = PruebaMapReduce.Reducing(letters_dict)
 
