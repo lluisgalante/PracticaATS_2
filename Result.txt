@@ -1,4 +1,4 @@
-ArcTecSw_2022_BigData_Practica_Part1_Sample.txt
+Result.txt
 t : 20.37%
 o : 20.99%
 p : 12.35%
