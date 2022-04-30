@@ -1,30 +1,27 @@
 from time import sleep, perf_counter
-from threading import Thread
+from multiprocessing import Process
 
 splitted_list = []
 mapping_list = []
 shuffling_list = []
 reducing_list = []
-class MapReduce:
 
-    def Splitting(self, line):
+def Splitting(line):
 
-        line = line.lower()
-        txt = line.replace("", "")
-        txt1 = txt.replace("\n", "")
-        txt2 = txt1.replace(".", "")
-        txt3 = txt2.replace("!", "")
-        txt4 = txt3.replace("?", "")
-        txt5 = txt4.replace("'", "")
-        txt6 = txt5.replace(",", "")
-        txt7 = txt6.replace(";", "")
-        txt8 = txt7.replace(":", "")
-        txt9 = txt8.replace("-", "")
+            line = line.lower()
+            txt = line.replace("", "")
+            txt1 = txt.replace("\n", "")
+            txt2 = txt1.replace(".", "")
+            txt3 = txt2.replace("!", "")
+            txt4 = txt3.replace("?", "")
+            txt5 = txt4.replace("'", "")
+            txt6 = txt5.replace(",", "")
+            txt7 = txt6.replace(";", "")
+            txt8 = txt7.replace(":", "")
+            txt9 = txt8.replace("-", "")
+            splitted_list.append(txt9)
 
-        splitted_list.append(txt9)
-
-
-    def Mapping(self, line ):
+def Mapping(line):
 
         list_of_words = []
 
@@ -39,7 +36,7 @@ class MapReduce:
                         word_dict[element].append([letter,1])
                     mapping_list.append([word_dict])
 
-    def Shuffling(self, list_dict_words_letters):
+def Shuffling(list_dict_words_letters):
 
 
             for word_dict in list_dict_words_letters:
@@ -61,7 +58,7 @@ class MapReduce:
                     shuffling_list.append(word_dict)
 
 
-    def Reducing(self, list_word_letters_shuffled ):
+def Reducing(list_word_letters_shuffled ):
 
         for word_dict in list_word_letters_shuffled:
             for value in word_dict.values():
@@ -71,7 +68,7 @@ class MapReduce:
 
 
 
-    def printFinalResult(self, list_words_letters_reduced, ficheroFinal):
+def printFinalResult(list_words_letters_reduced, ficheroFinal):
 
         sum_Words = len(list_words_letters_reduced) #177
 
@@ -100,78 +97,94 @@ class MapReduce:
 
 #----------------------------------------------------------------------
 
-fichero = "ArcTecSw_2022_BigData_Practica_Part1_Sample.txt"
+#list_file_lines_1000 =[]
+#for i in range(1000000):
+#    for line in list_file_lines:
+#        list_file_lines_1000.append(line)
+
+#ficheroFinal= "Sample_1000.txt"
+#with open(ficheroFinal, 'w', encoding="UTF-8") as f:
+#    for string in list_file_lines_1000:
+#        f.write(string)
+
+if __name__ == '__main__':
 
 
-f = open(fichero, encoding="UTF-8")
+    fichero = "ArcTecSw_2022_BigData_Practica_Part1_Sample.txt"
 
-list_file_lines = f.readlines()  # Reads all the lines and return them as each line a string element in a list
+    f = open(fichero, encoding="UTF-8")
 
+    list_file_lines = f.readlines()  # Reads all the lines and return them as each line a string element in a list
 
+    start_time = perf_counter()
 
-list_file_lines_1000 =[]
-for i in range(1000000):
+#SPLITTING
+    procs = []
+    proc = Process(target=Splitting)
+    procs.append(proc)
+    proc.start()
+
     for line in list_file_lines:
-        list_file_lines_1000.append(line)
+        string_txt = [line]
+        proc = Process(target=Splitting, args=(string_txt,))
+        procs.append(proc)
+        proc.start()
+    for proc in procs:
+        proc.join()
 
-ficheroFinal= "Sample_1000.txt"
-with open(ficheroFinal, 'w', encoding="UTF-8") as f:
-    for string in list_file_lines_1000:
-        f.write(string)
+    print(splitted_list)
 
+#MAPPING
+    procs = []
+    proc = Process(target=Splitting)
+    procs.append(proc)
+    proc.start()
 
-PruebaMapReduce = MapReduce()
+    for element in splitted_list:
+        string_txt = [element]
+        proc = Process(target=Mapping, args=(string_txt,))
+        procs.append(proc)
+        proc.start()
+    for proc in procs:
+        proc.join()
 
-threads = []
+    print(mapping_list)
 
-for line in list_file_lines:
-    string_txt = [line]
-    t = Thread(target = PruebaMapReduce.Splitting, args = string_txt)
-    threads.append(t)
-    t.start()
+#SHUFFLING
 
-for t in threads:
-    t.join()
+    procs = []
+    proc = Process(target=Splitting)
+    procs.append(proc)
+    proc.start()
 
-print(splitted_list)
+    for element in mapping_list:
+        string_txt = [element]
+        proc = Process(target=Shuffling, args=([element],))
+        procs.append(proc)
+        proc.start()
+    for proc in procs:
+        proc.join()
 
+    print(shuffling_list)
 
-for element in splitted_list:
-    string_txt = [element]
-    t = Thread(target = PruebaMapReduce.Mapping, args = string_txt)
-    threads.append(t)
-    t.start()
+#REDUCING
+    reducing_list = shuffling_list
+    procs = []
+    proc = Process(target=Splitting)
+    procs.append(proc)
+    proc.start()
 
-for t in threads:
-    t.join()
+    for element in reducing_list:
+        string_txt = [element]
+        proc = Process(target=Reducing, args=([[element]],)) #POSIBLE MEJORA
+        procs.append(proc)
+        proc.start()
+    for proc in procs:
+        proc.join()
 
-print(mapping_list)
+    print(reducing_list)
 
-for element in mapping_list:
-    #string_txt = [element]
-    t = Thread(target = PruebaMapReduce.Shuffling, args = [element])
-    threads.append(t)
-    t.start()
+    printFinalResult(reducing_list,"Result.txt")
+    end_time = perf_counter()
 
-for t in threads:
-    t.join()
-
-print(shuffling_list)
-
-reducing_list = shuffling_list
-
-for element in reducing_list:
-    #string_txt = [element]
-    t = Thread(target = PruebaMapReduce.Reducing, args = [[element]]) #POSIBLE MEJORA
-    threads.append(t)
-    t.start()
-
-for t in threads:
-    t.join()
-
-
-print(reducing_list)
-
-
-PruebaMapReduce.printFinalResult(reducing_list,"Result.txt")
-
+    print(f'It took {end_time- start_time: 0.2f} second(s) to complete.')
