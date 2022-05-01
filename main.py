@@ -1,16 +1,23 @@
-from time import sleep, perf_counter
-from threading import Thread
+import multiprocessing
+from time import sleep, perf_counter, time
+import time
+from multiprocessing import Pool
+import os
+
 
 splitted_list = []
 mapping_list = []
 shuffling_list = []
 reducing_list = []
+
 class MapReduce:
 
-    def Splitting(self, line):
-
-        line = line.lower()
-        txt = line.replace("", "")
+    def Splitting(self, string):
+        #print('parent process:', os.getppid())
+        #print('process id:', os.getpid())
+        #print(string)
+        string = string.lower()
+        txt = string.replace("", "")
         txt1 = txt.replace("\n", "")
         txt2 = txt1.replace(".", "")
         txt3 = txt2.replace("!", "")
@@ -20,14 +27,14 @@ class MapReduce:
         txt7 = txt6.replace(";", "")
         txt8 = txt7.replace(":", "")
         txt9 = txt8.replace("-", "")
+        return txt9
+        #shuffling_list.append(txt9)
+        #print(shuffling_list)
 
-        splitted_list.append(txt9)
-
-
-    def Mapping(self, line ):
+    def Mapping(self, line):
 
         list_of_words = []
-
+        #print(line)
         for word in line.split():
             list_of_words.append([word])
 
@@ -37,7 +44,8 @@ class MapReduce:
                     word_dict[element] = []
                     for letter in element:
                         word_dict[element].append([letter,1])
-                    mapping_list.append([word_dict])
+                    mapping_list.append(word_dict)
+                    return mapping_list
 
     def Shuffling(self, list_dict_words_letters):
 
@@ -58,7 +66,9 @@ class MapReduce:
                                     non_repeated_dict[letter] = [1]
 
                     word_dict[key] = non_repeated_dict
-                    shuffling_list.append(word_dict)
+                    return [word_dict]
+                    #shuffling_list.append(word_dict)
+
 
 
     def Reducing(self, list_word_letters_shuffled ):
@@ -104,21 +114,50 @@ fichero = "ArcTecSw_2022_BigData_Practica_Part1_Sample.txt"
 
 
 f = open(fichero, encoding="UTF-8")
-
 list_file_lines = f.readlines()  # Reads all the lines and return them as each line a string element in a list
+f.close()
+
+PruebaMapReduce = MapReduce()
+
+result = []
+start_time = perf_counter()
+
+if __name__ == '__main__':
+
+
+    start_time = time.time()
+    p = Pool(multiprocessing.cpu_count())
+    splitted_list = p.map(PruebaMapReduce.Splitting, list_file_lines)
+    #print(splitted_list)
+    mapping_list = p.map(PruebaMapReduce.Mapping, splitted_list)
+    #print(mapping_list)
+
+    """shuffling_list = p.map(PruebaMapReduce.Shuffling, mapping_list)
+    print(shuffling_list)"""
+    end_time = time.time()
+
+    print("Tiempo ejecucion = ",(end_time - start_time))
 
 
 
-list_file_lines_1000 =[]
+
+"""if __name__ == '__main__':
+    p = Process(target=PruebaMapReduce.Splitting, args=(list_file_lines,))
+    p.start()
+    p.join()"""
+
+"""list_file_lines_1000 =[]
 for i in range(1000000):
     for line in list_file_lines:
         list_file_lines_1000.append(line)
 
-ficheroFinal= "Sample_1000.txt"
+
+ficheroFinal = "Sample_Millon.txt"
 with open(ficheroFinal, 'w', encoding="UTF-8") as f:
     for string in list_file_lines_1000:
-        f.write(string)
+       f.write(string)"""
 
+"""start_time = perf_counter()
 
 PruebaMapReduce = MapReduce()
 
@@ -172,6 +211,8 @@ for t in threads:
 
 print(reducing_list)
 
+end_time = perf_counter()
 
 PruebaMapReduce.printFinalResult(reducing_list,"Result.txt")
 
+print(f'It took {end_time- start_time: 0.2f} second(s) to complete.')"""
