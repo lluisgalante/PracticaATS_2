@@ -5,10 +5,7 @@ from multiprocessing import Pool
 import os
 
 
-splitted_list = []
-mapping_list = []
-shuffling_list = []
-reducing_list = []
+
 
 class MapReduce:
 
@@ -30,6 +27,7 @@ class MapReduce:
     def Mapping(self, line):
 
         list_of_words = []
+        mapping_return =[]
         #print(line)
         for word in line.split():
             list_of_words.append([word])
@@ -40,30 +38,30 @@ class MapReduce:
                     word_dict[element] = []
                     for letter in element:
                         word_dict[element].append([letter,1])
-                    mapping_list.append(word_dict)
-                    return self.Shuffling(mapping_list)
+                    mapping_return.append(word_dict)
+                return self.Shuffling(mapping_return)
 
     def Shuffling(self, list_dict_words_letters):
+        #print('parent process:', os.getppid())
+        #print('process id:', os.getpid())
+        for word_dict in list_dict_words_letters:
+            # values = list(word_dict.values())
+            list_key = list(word_dict.keys())
+            key = list_key[0]
 
+            for value in word_dict.values():
+                non_repeated_dict = dict()
+                for letter_int in value:
+                    for letter in letter_int:
+                        if isinstance(letter, str):
+                            if letter in non_repeated_dict:
+                                non_repeated_dict[letter].append(1)
+                            else:
+                                non_repeated_dict[letter] = [1]
 
-            for word_dict in list_dict_words_letters:
-                #values = list(word_dict.values())
-                list_key = list(word_dict.keys())
-                key = list_key[0]
+                word_dict[key] = non_repeated_dict
+                return [word_dict]
 
-                for value in word_dict.values():
-                    non_repeated_dict=dict()
-                    for letter_int in value:
-                        for letter in letter_int:
-                            if isinstance(letter,str):
-                                if letter in non_repeated_dict:
-                                    non_repeated_dict[letter].append(1)
-                                else:
-                                    non_repeated_dict[letter] = [1]
-
-                    word_dict[key] = non_repeated_dict
-                    return [word_dict]
-                    #shuffling_list.append(word_dict)
 
 
 
@@ -107,11 +105,16 @@ class MapReduce:
 #----------------------------------------------------------------------
 
 fichero = "ArcTecSw_2022_BigData_Practica_Part1_Sample.txt"
-
-
 f = open(fichero, encoding="UTF-8")
 list_file_lines = f.readlines()  # Reads all the lines and return them as each line a string element in a list
 f.close()
+
+list_file_lines_1000 =[]
+for i in range(100000):
+    for line in list_file_lines:
+        list_file_lines_1000.append(line)
+
+
 
 PruebaMapReduce = MapReduce()
 
@@ -120,15 +123,23 @@ start_time = perf_counter()
 
 if __name__ == '__main__':
 
+    splitted_list = []
+    mapping_list = []
+    shuffling_list = []
+    reducing_list = []
 
     start_time = time.time()
     p = Pool(multiprocessing.cpu_count())
-    shuffling_list = p.map(PruebaMapReduce.Splitting, list_file_lines)
-    #print(mapping_list)
+    shuffling_list = p.map(PruebaMapReduce.Splitting, list_file_lines_1000)
 
-    #shuffling_list = p.map(PruebaMapReduce.Shuffling, mapping_list)
-    print(shuffling_list)
+
+
+
+    """for i in range(len(mapping_list)):
+
+        shuffling_list.append(PruebaMapReduce.Shuffling(mapping_list[i]))"""
     end_time = time.time()
+    #print(shuffling_list)
 
     print("Tiempo ejecucion = ",(end_time - start_time))
 
