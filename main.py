@@ -13,9 +13,7 @@ reducing_list = []
 class MapReduce:
 
     def Splitting(self, string):
-        #print('parent process:', os.getppid())
-        #print('process id:', os.getpid())
-        #print(string)
+
         string = string.lower()
         txt = string.replace("", "")
         txt1 = txt.replace("\n", "")
@@ -27,9 +25,7 @@ class MapReduce:
         txt7 = txt6.replace(";", "")
         txt8 = txt7.replace(":", "")
         txt9 = txt8.replace("-", "")
-        return txt9
-        #shuffling_list.append(txt9)
-        #print(shuffling_list)
+        return self.Mapping(txt9)
 
     def Mapping(self, line):
 
@@ -45,7 +41,7 @@ class MapReduce:
                     for letter in element:
                         word_dict[element].append([letter,1])
                     mapping_list.append(word_dict)
-                    return mapping_list
+                    return self.Shuffling(mapping_list)
 
     def Shuffling(self, list_dict_words_letters):
 
@@ -127,13 +123,11 @@ if __name__ == '__main__':
 
     start_time = time.time()
     p = Pool(multiprocessing.cpu_count())
-    splitted_list = p.map(PruebaMapReduce.Splitting, list_file_lines)
-    #print(splitted_list)
-    mapping_list = p.map(PruebaMapReduce.Mapping, splitted_list)
+    shuffling_list = p.map(PruebaMapReduce.Splitting, list_file_lines)
     #print(mapping_list)
 
-    """shuffling_list = p.map(PruebaMapReduce.Shuffling, mapping_list)
-    print(shuffling_list)"""
+    #shuffling_list = p.map(PruebaMapReduce.Shuffling, mapping_list)
+    print(shuffling_list)
     end_time = time.time()
 
     print("Tiempo ejecucion = ",(end_time - start_time))
