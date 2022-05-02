@@ -3,7 +3,7 @@ from time import sleep, perf_counter, time
 import time
 from multiprocessing import Pool
 import os
-
+import argparse
 
 class MapReduce:
 
@@ -94,7 +94,7 @@ def GenerateNewFileResult(list_words_letters_reduced, destination_file):
     for list in list_words_letters_reduced:
         sum_Words += len(list)
 
-    print(sum_Words)
+    print("Number of words: ",sum_Words)
     letters_dictionary = dict()
 
     for list_dict in list_words_letters_reduced:
@@ -120,7 +120,13 @@ def GenerateNewFileResult(list_words_letters_reduced, destination_file):
 
 if __name__ == '__main__':
 
-    input_file = ReadAndRedimensionFile("ArcTecSw_2022_BigData_Practica_Part1_Sample.txt", 100)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("sourcefile", help="enter correct file name")
+    parser.add_argument("iterations", help="enter 1 or x if you want to multiply your source file", type=int)
+    parser.add_argument("resultfile", help="enter results file")
+    args = parser.parse_args()
+
+    input_file = ReadAndRedimensionFile(args.sourcefile, args.iterations)
     start_time = time.time()
 
     MapReduced = MapReduce()
@@ -130,6 +136,6 @@ if __name__ == '__main__':
     p.join()
 
     end_time = time.time()
-    GenerateNewFileResult(reduced_list, "Result_threads.txt")
+    GenerateNewFileResult(reduced_list, args.resultfile)
     print("Execution time: ",(end_time - start_time))
 
