@@ -1,6 +1,7 @@
 from time import sleep, perf_counter, time
 import time
 import argparse
+import sys
 
 class MapReduce:
     def Splitting(self, list_file_lines):
@@ -80,19 +81,14 @@ class MapReduce:
 
 #----------------------------------------------------------------------
 
-def ReadAndRedimensionFile(file_name, redimension):
+def ReadFile(file_name):
     f = open(file_name, encoding="UTF-8")
     file_lines = f.readlines()  # Reads all the lines and return them as each line a string element in a list
     f.close()
 
-    new_file = []
-    for i in range(redimension):
-        for line in file_lines:
-            new_file.append(line)
+    return file_lines
 
-    return new_file
-
-def GenerateNewFileResult(list_words_letters_reduced, destination_file):
+def GenerateResult(list_words_letters_reduced, source_file):
     sum_Words = 0
     for list in list_words_letters_reduced:
         sum_Words += len(list)
@@ -114,28 +110,60 @@ def GenerateNewFileResult(list_words_letters_reduced, destination_file):
         num_percentage = str(round(num, 2)) + "%"
         letters_dictionary[letter] = num_percentage
 
+    list = []
+    list.append([source_file])
+    list.append(letters_dictionary)
+
+    return list
+
+def GenerateFile(result_file, destination_file):
+
     with open(destination_file, 'w', encoding="UTF-8") as f:
-        f.write(destination_file + '\n')
-        for key, value in letters_dictionary.items():
-            f.write('%s : %s\n' % (key, value))
+        for file in result_file:
+            iterator = 0
+            for values in file:
+                if iterator == 0:
+                    f.write('%s\n' % (values[0]))
+                else:
+                    for key, value in values.items():
+                        f.write('%s : %s\n' % (key, value))
+                iterator = iterator+1
 
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("sourcefile", help="enter correct file name")
-    parser.add_argument("iterations", help="enter 1 or x if you want to multiply your source file", type=int)
-    parser.add_argument("resultfile", help="enter results file")
+    files = []
+    final_result = []
+    source = "sourcefileN"
+    for i in range(len(sys.argv) - 1):
+        final_source = source.replace("N", str(i + 1))
+        parser.add_argument(final_source, help="enter correct file name")
+
     args = parser.parse_args()
-    input_file = ReadAndRedimensionFile(args.sourcefile, args.iterations)
+
+    # He intentado mejorarlo pero no se como
+    if (len(sys.argv) - 1 == 1):
+        files.append(args.sourcefile1)
+    if (len(sys.argv) - 1 == 2):
+        files.append(args.sourcefile1)
+        files.append(args.sourcefile2)
+    if (len(sys.argv) - 1 == 3):
+        files.append(args.sourcefile1)
+        files.append(args.sourcefile2)
+        files.append(args.sourcefile3)
+
     start_time = time.time()
 
-    MapReduced = MapReduce()
-    listReturn = MapReduced.Splitting(input_file)
-    list_words_letters = MapReduced.Mapping(listReturn)
-    list_words_letters_shuffled = MapReduced.Shuffling(list_words_letters)
-    list_words_letters_reduceded = MapReduced.Reducing(list_words_letters_shuffled)
+    for file in files:
+        MapReduced = MapReduce()
+        input_file = ReadFile(file)
+        listReturn = MapReduced.Splitting(input_file)
+        list_words_letters = MapReduced.Mapping(listReturn)
+        list_words_letters_shuffled = MapReduced.Shuffling(list_words_letters)
+        list_words_letters_reduceded = MapReduced.Reducing(list_words_letters_shuffled)
+        final_result.append(GenerateResult(list_words_letters_reduceded, file))
 
     end_time = time.time()
-    GenerateNewFileResult(list_words_letters_reduceded, args.resultfile)
+    GenerateFile(final_result, "Result.txt")
 
     print("Execution time: ",(end_time - start_time))
