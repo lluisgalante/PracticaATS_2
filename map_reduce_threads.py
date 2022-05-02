@@ -4,6 +4,7 @@ import time
 from multiprocessing import Pool
 import os
 import argparse
+import sys
 
 class MapReduce:
 
@@ -126,15 +127,13 @@ def GenerateResult(list_words_letters_reduced, source_file):
 def GenerateFile(result_file, destination_file):
 
     with open(destination_file, 'w', encoding="UTF-8") as f:
-        f.write(destination_file + '\n')
         for file in result_file:
             iterator = 0
             for values in file:
                 if iterator == 0:
-                    f.write('%s\n' % (values))
+                    f.write('%s\n' % (values[0]))
                 else:
                     for key, value in values.items():
-                        print(values)
                         f.write('%s : %s\n' % (key, value))
                 iterator = iterator+1
 
@@ -143,16 +142,25 @@ def GenerateFile(result_file, destination_file):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("sourcefile1", help="enter correct file name")
-    parser.add_argument("sourcefile2", help="enter correct file name")
-    parser.add_argument("sourcefile3", help="enter correct file name")
-    args = parser.parse_args()
-
     files = []
     final_result = []
-    files.append(args.sourcefile1)
-    files.append(args.sourcefile2)
-    files.append(args.sourcefile3)
+    source = "sourcefileN"
+    for i in range(len(sys.argv)-1):
+        final_source = source.replace("N",str(i+1))
+        parser.add_argument(final_source, help="enter correct file name")
+
+    args = parser.parse_args()
+
+    #He intentado mejorarlo pero no se como
+    if (len(sys.argv)-1 == 1):
+        files.append(args.sourcefile1)
+    if (len(sys.argv)-1 == 2):
+        files.append(args.sourcefile1)
+        files.append(args.sourcefile2)
+    if (len(sys.argv) - 1 == 3):
+        files.append(args.sourcefile1)
+        files.append(args.sourcefile2)
+        files.append(args.sourcefile3)
 
     start_time = time.time()
     for file in files:
