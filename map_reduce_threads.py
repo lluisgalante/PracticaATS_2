@@ -7,8 +7,8 @@ import argparse
 
 class MapReduce:
 
-    def Start(self, string):
-        return self.Splitting(string)
+    def Start(self, line):
+        return self.Splitting(line)
 
     def Splitting(self, line):
         line = line.lower()
@@ -88,8 +88,13 @@ def ReadAndRedimensionFile(file_name, redimension):
 
     return new_file
 
+def ReadFile(file_name):
+    f = open(file_name, encoding="UTF-8")
+    file_lines = f.readlines()  # Reads all the lines and return them as each line a string element in a list
+    f.close()
+    return file_lines
 
-def GenerateNewFileResult(list_words_letters_reduced, destination_file):
+def GenerateResult(list_words_letters_reduced, source_file):
     sum_Words = 0
     for list in list_words_letters_reduced:
         sum_Words += len(list)
@@ -111,31 +116,55 @@ def GenerateNewFileResult(list_words_letters_reduced, destination_file):
         num_percentage = str(round(num, 2)) + "%"
         letters_dictionary[letter] = num_percentage
 
+    list = []
+    list.append([source_file])
+    list.append(letters_dictionary)
+    print(list)
+
+    return list
+
+def GenerateFile(result_file, destination_file):
+
     with open(destination_file, 'w', encoding="UTF-8") as f:
         f.write(destination_file + '\n')
-        for key, value in letters_dictionary.items():
-            f.write('%s : %s\n' % (key, value))
+        for file in result_file:
+            iterator = 0
+            for values in file:
+                if iterator == 0:
+                    f.write('%s\n' % (values))
+                else:
+                    for key, value in values.items():
+                        print(values)
+                        f.write('%s : %s\n' % (key, value))
+                iterator = iterator+1
 
 #-----------------------------------------------------------------------------
 
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("sourcefile", help="enter correct file name")
-    parser.add_argument("iterations", help="enter 1 or x if you want to multiply your source file", type=int)
-    parser.add_argument("resultfile", help="enter results file")
+    parser.add_argument("sourcefile1", help="enter correct file name")
+    parser.add_argument("sourcefile2", help="enter correct file name")
+    parser.add_argument("sourcefile3", help="enter correct file name")
     args = parser.parse_args()
 
-    input_file = ReadAndRedimensionFile(args.sourcefile, args.iterations)
+    files = []
+    final_result = []
+    files.append(args.sourcefile1)
+    files.append(args.sourcefile2)
+    files.append(args.sourcefile3)
+
     start_time = time.time()
+    for file in files:
+        input_file = ReadFile(file)
+        MapReduced = MapReduce()
+        p = Pool(multiprocessing.cpu_count())
+        reduced_list = p.map(MapReduced.Start, input_file)
+        final_result.append(GenerateResult(reduced_list, file))
+        p.close()
+        p.join()
 
-    MapReduced = MapReduce()
-    p = Pool(multiprocessing.cpu_count())
-    reduced_list = p.map(MapReduced.Start, input_file)
-    p.close()
-    p.join()
-
+    GenerateFile(final_result, "Result.txt")
     end_time = time.time()
-    GenerateNewFileResult(reduced_list, args.resultfile)
     print("Execution time: ",(end_time - start_time))
 
