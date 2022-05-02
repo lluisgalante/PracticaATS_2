@@ -7,8 +7,10 @@ import os
 
 class MapReduce:
 
-    def Splitting(self, string):
+    def Start(self, string):
+        return self.Splitting(string)
 
+    def Splitting(self, string):
         string = string.lower()
         txt = string.replace("", "")
         txt1 = txt.replace("\n", "")
@@ -23,7 +25,6 @@ class MapReduce:
         return self.Mapping(txt9)
 
     def Mapping(self, line):
-
         list_of_words = []
         mapping_return =[]
         #print(line)
@@ -139,7 +140,7 @@ if __name__ == '__main__':
 
     MapReduced = MapReduce()
     p = Pool(multiprocessing.cpu_count())
-    reduced_list = p.map(MapReduced.Splitting, input_file)
+    reduced_list = p.map(MapReduced.Start, input_file)
     p.close()
     p.join()
 
