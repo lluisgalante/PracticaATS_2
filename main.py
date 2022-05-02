@@ -5,8 +5,6 @@ from multiprocessing import Pool
 import os
 
 
-
-
 class MapReduce:
 
     def Splitting(self, string):
@@ -85,154 +83,67 @@ class MapReduce:
         #print(list_word_letters_shuffled)
         return list_word_letters_shuffled
 
-
-    def printFinalResult(self, list_words_letters_reduced, ficheroFinal):
-
-        sum_Words=0
-        for list in list_words_letters_reduced:
-            sum_Words += len(list)
-
-
-        print(sum_Words)
-
-        letters_dictionary = dict()
-
-        for list_dict in list_words_letters_reduced:
-
-            for word_dict in list_dict:
-                for value in word_dict.values():
-
-                    # print(value)
-                    for letter in value:
-                        if letter in letters_dictionary:
-                            #print(letters_dictionary[letter])
-                            letters_dictionary[letter] = letters_dictionary[letter] + 1
-                        else:
-                            letters_dictionary[letter]=1
-
-        for letter in letters_dictionary:
-            numero = (letters_dictionary[letter] / sum_Words) * 100
-            string_numero =str(round(numero, 2)) + "%"
-            #string_numero_percentage = string_numero + "%"
-            letters_dictionary[letter] = string_numero
-
-        with open(ficheroFinal, 'w', encoding="UTF-8") as f:
-            f.write(ficheroFinal + '\n')
-            for key, value in letters_dictionary.items():
-                f.write('%s : %s\n' % (key, value))
-
 #----------------------------------------------------------------------
 
-fichero = "ArcTecSw_2022_BigData_Practica_Part1_Sample.txt"
-f = open(fichero, encoding="UTF-8")
-list_file_lines = f.readlines()  # Reads all the lines and return them as each line a string element in a list
-f.close()
+def ReadAndRedimensionFile(file_name, redimension):
+    f = open(file_name, encoding="UTF-8")
+    file_lines = f.readlines()  # Reads all the lines and return them as each line a string element in a list
+    f.close()
 
-"""list_file_lines_1000 =[]
-for i in range(100000):
-    for line in list_file_lines:
-        list_file_lines_1000.append(line)"""
+    new_file = []
+    for i in range(redimension):
+        for line in file_lines:
+            new_file.append(line)
+
+    return new_file
 
 
+def GenerateNewFileResult(list_words_letters_reduced, ficheroFinal):
+    sum_Words = 0
+    for list in list_words_letters_reduced:
+        sum_Words += len(list)
 
-PruebaMapReduce = MapReduce()
+    print(sum_Words)
 
-result = []
-start_time = perf_counter()
+    letters_dictionary = dict()
+
+    for list_dict in list_words_letters_reduced:
+
+        for word_dict in list_dict:
+            for value in word_dict.values():
+
+                for letter in value:
+                    if letter in letters_dictionary:
+                        # print(letters_dictionary[letter])
+                        letters_dictionary[letter] = letters_dictionary[letter] + 1
+                    else:
+                        letters_dictionary[letter] = 1
+
+    for letter in letters_dictionary:
+        numero = (letters_dictionary[letter] / sum_Words) * 100
+        string_numero = str(round(numero, 2)) + "%"
+        # string_numero_percentage = string_numero + "%"
+        letters_dictionary[letter] = string_numero
+
+    with open(ficheroFinal, 'w', encoding="UTF-8") as f:
+        f.write(ficheroFinal + '\n')
+        for key, value in letters_dictionary.items():
+            f.write('%s : %s\n' % (key, value))
+
+#-----------------------------------------------------------------------------
 
 if __name__ == '__main__':
 
-    splitted_list = []
-    mapping_list = []
-    shuffling_list = []
-    reducing_list = []
-
+    input_file = ReadAndRedimensionFile("ArcTecSw_2022_BigData_Practica_Part1_Sample.txt", 10000)
     start_time = time.time()
+
+    MapReduced = MapReduce()
     p = Pool(multiprocessing.cpu_count())
-    reducing_list = p.map(PruebaMapReduce.Splitting, list_file_lines)
+    reduced_list = p.map(MapReduced.Splitting, input_file)
     p.close()
     p.join()
-    print(reducing_list)
+
     end_time = time.time()
-    PruebaMapReduce.printFinalResult(reducing_list, "Result.txt")
+    GenerateNewFileResult(reduced_list, "Result.txt")
+    print("Execution time: ",(end_time - start_time))
 
-    print("Tiempo ejecucion = ",(end_time - start_time))
-
-
-
-
-"""if __name__ == '__main__':
-    p = Process(target=PruebaMapReduce.Splitting, args=(list_file_lines,))
-    p.start()
-    p.join()"""
-
-"""list_file_lines_1000 =[]
-for i in range(1000000):
-    for line in list_file_lines:
-        list_file_lines_1000.append(line)
-
-
-ficheroFinal = "Sample_Millon.txt"
-with open(ficheroFinal, 'w', encoding="UTF-8") as f:
-    for string in list_file_lines_1000:
-       f.write(string)"""
-
-"""start_time = perf_counter()
-
-PruebaMapReduce = MapReduce()
-
-threads = []
-
-for line in list_file_lines:
-    string_txt = [line]
-    t = Thread(target = PruebaMapReduce.Splitting, args = string_txt)
-    threads.append(t)
-    t.start()
-
-for t in threads:
-    t.join()
-
-print(splitted_list)
-
-
-for element in splitted_list:
-    string_txt = [element]
-    t = Thread(target = PruebaMapReduce.Mapping, args = string_txt)
-    threads.append(t)
-    t.start()
-
-for t in threads:
-    t.join()
-
-print(mapping_list)
-
-for element in mapping_list:
-    #string_txt = [element]
-    t = Thread(target = PruebaMapReduce.Shuffling, args = [element])
-    threads.append(t)
-    t.start()
-
-for t in threads:
-    t.join()
-
-print(shuffling_list)
-
-reducing_list = shuffling_list
-
-for element in reducing_list:
-    #string_txt = [element]
-    t = Thread(target = PruebaMapReduce.Reducing, args = [[element]]) #POSIBLE MEJORA
-    threads.append(t)
-    t.start()
-
-for t in threads:
-    t.join()
-
-
-print(reducing_list)
-
-end_time = perf_counter()
-
-PruebaMapReduce.printFinalResult(reducing_list,"Result.txt")
-
-print(f'It took {end_time- start_time: 0.2f} second(s) to complete.')"""
