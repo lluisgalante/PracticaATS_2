@@ -10,9 +10,9 @@ class MapReduce:
     def Start(self, string):
         return self.Splitting(string)
 
-    def Splitting(self, string):
-        string = string.lower()
-        txt = string.replace("", "")
+    def Splitting(self, line):
+        line = line.lower()
+        txt = line.replace("", "")
         txt1 = txt.replace("\n", "")
         txt2 = txt1.replace(".", "")
         txt3 = txt2.replace("!", "")
@@ -21,13 +21,13 @@ class MapReduce:
         txt6 = txt5.replace(",", "")
         txt7 = txt6.replace(";", "")
         txt8 = txt7.replace(":", "")
-        txt9 = txt8.replace("-", "")
-        return self.Mapping(txt9)
+        splitted_line = txt8.replace("-", "")
+        return self.Mapping(splitted_line)
 
     def Mapping(self, line):
         list_of_words = []
         mapping_return =[]
-        #print(line)
+
         for word in line.split():
             list_of_words.append([word])
 
@@ -38,22 +38,17 @@ class MapReduce:
                     for letter in element:
                         word_dict[element].append([letter,1])
                     mapping_return.append([word_dict])
-        #print(mapping_return)
+
         return self.Shuffling(mapping_return)
 
     def Shuffling(self, lists_dict_words_letters):
-        #print('parent process:', os.getppid())
-        #print('process id:', os.getpid())
-        #print(lists_dict_words_letters)
+
         list_shuffling_list=[]
         for list_dict_words_letters in lists_dict_words_letters:
             for word_dict in list_dict_words_letters:
-                #print(word_dict)
-                # values = list(word_dict.values())
                 list_key = list(word_dict.keys())
                 key = list_key[0]
                 for value in word_dict.values():
-
                     non_repeated_dict = dict()
                     for letter_int in value:
                         for letter in letter_int:
@@ -65,8 +60,7 @@ class MapReduce:
 
                     word_dict[key] = non_repeated_dict
                 list_shuffling_list.append(word_dict)
-                #print(list_dict_words_letters)
-        #print(list_shuffling_list)
+
         return self.Reducing(list_shuffling_list)
 
 
@@ -74,14 +68,10 @@ class MapReduce:
 
     def Reducing(self, list_word_letters_shuffled ):
 
-        #print(list_word_letters_shuffled)
         for word_dict in list_word_letters_shuffled:
-            #print(word_dict)
             for value in word_dict.values():
-                #print(value)
                 for letter in value:
                     value[letter] = len(value[letter])
-        #print(list_word_letters_shuffled)
         return list_word_letters_shuffled
 
 #----------------------------------------------------------------------
@@ -99,35 +89,30 @@ def ReadAndRedimensionFile(file_name, redimension):
     return new_file
 
 
-def GenerateNewFileResult(list_words_letters_reduced, ficheroFinal):
+def GenerateNewFileResult(list_words_letters_reduced, destination_file):
     sum_Words = 0
     for list in list_words_letters_reduced:
         sum_Words += len(list)
 
     print(sum_Words)
-
     letters_dictionary = dict()
 
     for list_dict in list_words_letters_reduced:
-
         for word_dict in list_dict:
             for value in word_dict.values():
-
                 for letter in value:
                     if letter in letters_dictionary:
-                        # print(letters_dictionary[letter])
                         letters_dictionary[letter] = letters_dictionary[letter] + 1
                     else:
                         letters_dictionary[letter] = 1
 
     for letter in letters_dictionary:
-        numero = (letters_dictionary[letter] / sum_Words) * 100
-        string_numero = str(round(numero, 2)) + "%"
-        # string_numero_percentage = string_numero + "%"
-        letters_dictionary[letter] = string_numero
+        num = (letters_dictionary[letter] / sum_Words) * 100
+        num_percentage = str(round(num, 2)) + "%"
+        letters_dictionary[letter] = num_percentage
 
-    with open(ficheroFinal, 'w', encoding="UTF-8") as f:
-        f.write(ficheroFinal + '\n')
+    with open(destination_file, 'w', encoding="UTF-8") as f:
+        f.write(destination_file + '\n')
         for key, value in letters_dictionary.items():
             f.write('%s : %s\n' % (key, value))
 
@@ -135,7 +120,7 @@ def GenerateNewFileResult(list_words_letters_reduced, ficheroFinal):
 
 if __name__ == '__main__':
 
-    input_file = ReadAndRedimensionFile("ArcTecSw_2022_BigData_Practica_Part1_Sample.txt", 10000)
+    input_file = ReadAndRedimensionFile("ArcTecSw_2022_BigData_Practica_Part1_Sample.txt", 100)
     start_time = time.time()
 
     MapReduced = MapReduce()
