@@ -1,36 +1,43 @@
 import multiprocessing
 from time import sleep, perf_counter, time
 import time
-from multiprocessing import Pool
+from multiprocessing import Process, Manager
 import os
 import argparse
 import sys
 
+
+
 class MapReduce:
 
-    def Start(self, line):
-        return self.Splitting(line)
 
-    def Splitting(self, line):
-        line = line.lower()
-        txt = line.replace("", "")
-        txt1 = txt.replace("\n", "")
-        txt2 = txt1.replace(".", "")
-        txt3 = txt2.replace("!", "")
-        txt4 = txt3.replace("?", "")
-        txt5 = txt4.replace("'", "")
-        txt6 = txt5.replace(",", "")
-        txt7 = txt6.replace(";", "")
-        txt8 = txt7.replace(":", "")
-        splitted_line = txt8.replace("-", "")
-        return self.Mapping(splitted_line)
+    def Start(self, line, reduced_list):
+        self.Splitting(line, reduced_list)
 
-    def Mapping(self, line):
+    def Splitting(self, line, reduced_list):
+        splitted_list = []
+        for lines in line:
+            lines = lines.lower()
+            txt = lines.replace("", "")
+            txt1 = txt.replace("\n", "")
+            txt2 = txt1.replace(".", "")
+            txt3 = txt2.replace("!", "")
+            txt4 = txt3.replace("?", "")
+            txt5 = txt4.replace("'", "")
+            txt6 = txt5.replace(",", "")
+            txt7 = txt6.replace(";", "")
+            txt8 = txt7.replace(":", "")
+            splitted_line = txt8.replace("-", "")
+            splitted_list.append(splitted_line)
+        self.Mapping(splitted_list, reduced_list)
+
+    def Mapping(self, line, reduced_list):
         list_of_words = []
         mapping_return =[]
 
-        for word in line.split():
-            list_of_words.append([word])
+        for lines in line:
+            for word in lines.split():
+                list_of_words.append([word])
 
         for word in list_of_words:
                 for element in word:
@@ -40,9 +47,9 @@ class MapReduce:
                         word_dict[element].append([letter,1])
                     mapping_return.append([word_dict])
 
-        return self.Shuffling(mapping_return)
+        self.Shuffling(mapping_return, reduced_list)
 
-    def Shuffling(self, lists_dict_words_letters):
+    def Shuffling(self, lists_dict_words_letters, reduced_list):
 
         list_shuffling_list=[]
         for list_dict_words_letters in lists_dict_words_letters:
@@ -62,18 +69,18 @@ class MapReduce:
                     word_dict[key] = non_repeated_dict
                 list_shuffling_list.append(word_dict)
 
-        return self.Reducing(list_shuffling_list)
+        self.Reducing(list_shuffling_list, reduced_list)
 
 
 
 
-    def Reducing(self, list_word_letters_shuffled ):
+    def Reducing(self, list_word_letters_shuffled, reduced_list):
 
         for word_dict in list_word_letters_shuffled:
             for value in word_dict.values():
                 for letter in value:
                     value[letter] = len(value[letter])
-        return list_word_letters_shuffled
+        reduced_list.append(list_word_letters_shuffled)
 
 #----------------------------------------------------------------------
 
@@ -89,11 +96,32 @@ def ReadAndRedimensionFile(file_name, redimension):
 
     return new_file
 
-def ReadFile(file_name):
+def ReadAndDivideFile(file_name):
     f = open(file_name, encoding="UTF-8")
     file_lines = f.readlines()  # Reads all the lines and return them as each line a string element in a list
     f.close()
-    return file_lines
+
+    file = []
+    file1 = []
+    file2 = []
+    file3 = []
+    file4 = []
+
+    for i in range(int(len(file_lines)/4)):
+        file1.append(file_lines[i])
+    for i in range(int(len(file_lines) / 4)):
+        file2.append(file_lines[int(i-(len(file_lines)/4)-1)])
+    for i in range(int(len(file_lines) / 4)):
+        file3.append(file_lines[int(i-(2*len(file_lines)/4)-1)])
+    for i in range(int(len(file_lines) / 4)):
+        file4.append(file_lines[int(i-(3*len(file_lines)/4)-1)])
+
+    file.append(file1)
+    file.append(file2)
+    file.append(file3)
+    file.append(file4)
+
+    return file
 
 def GenerateResult(list_words_letters_reduced, source_file):
     sum_Words = 0
@@ -120,7 +148,6 @@ def GenerateResult(list_words_letters_reduced, source_file):
     list = []
     list.append([source_file])
     list.append(letters_dictionary)
-    print(list)
 
     return list
 
@@ -140,6 +167,19 @@ def GenerateFile(result_file, destination_file):
 #-----------------------------------------------------------------------------
 
 if __name__ == '__main__':
+
+    """f = open("ArcTecSw_2022_BigData_Practica_Part1_Sample.txt", encoding="UTF-8")
+    file_lines = f.readlines()  # Reads all the lines and return them as each line a string element in a list
+    f.close()
+
+    new_file = []
+    for i in range(150000):
+        for line in file_lines:
+            new_file.append(line)
+
+    with open("Sample_150k.txt", 'w', encoding="UTF-8") as f:
+        for value in new_file:
+            f.write(value)"""
 
     parser = argparse.ArgumentParser()
     files = []
@@ -164,15 +204,16 @@ if __name__ == '__main__':
 
     start_time = time.time()
     for file in files:
-        input_file = ReadFile(file)
+        input_file = ReadAndDivideFile(file)
         MapReduced = MapReduce()
-        p = Pool(multiprocessing.cpu_count())
-        reduced_list = p.map(MapReduced.Start, input_file)
-        final_result.append(GenerateResult(reduced_list, file))
-        p.close()
-        p.join()
+        with Manager() as manager:
+            reduced_list = manager.list()
+            for i in range(len(input_file)):
+                p = Process(target=MapReduced.Start,args=(input_file[i], reduced_list,))
+                p.start()
+                p.join()
+            final_result.append(GenerateResult(reduced_list, file))
 
     GenerateFile(final_result, "Result.txt")
     end_time = time.time()
-    print("Execution time: ",(end_time - start_time))
-
+    print("Execution time: ", (end_time - start_time))
