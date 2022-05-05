@@ -126,7 +126,7 @@ def GenerateResult(list_words_letters_reduced, source_file):
     list.append([source_file])
     list.append(letters_dictionary)
 
-    GenerateHistogram(histogram)
+    #GenerateHistogram(histogram)
     return list
 
 def GenerateHistogram(histogram):
