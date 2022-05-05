@@ -5,6 +5,7 @@ from multiprocessing import Pool
 import os
 import argparse
 import sys
+import matplotlib.pyplot as plt
 
 class MapReduce:
 
@@ -100,6 +101,8 @@ def GenerateResult(list_words_letters_reduced, source_file):
     for list in list_words_letters_reduced:
         sum_Words += len(list)
 
+    histogram = []
+
     print("Number of words: ",sum_Words)
     letters_dictionary = dict()
 
@@ -107,10 +110,12 @@ def GenerateResult(list_words_letters_reduced, source_file):
         for word_dict in list_dict:
             for value in word_dict.values():
                 for letter in value:
+                    histogram.append(letter)
                     if letter in letters_dictionary:
                         letters_dictionary[letter] = letters_dictionary[letter] + 1
                     else:
                         letters_dictionary[letter] = 1
+
 
     for letter in letters_dictionary:
         num = (letters_dictionary[letter] / sum_Words) * 100
@@ -121,12 +126,21 @@ def GenerateResult(list_words_letters_reduced, source_file):
     list.append([source_file])
     list.append(letters_dictionary)
 
+    GenerateHistogram(histogram)
     return list
+
+def GenerateHistogram(histogram):
+    plt.hist(histogram, bins=120, color="blue", rwidth=4)
+    plt.title("Histograma")
+    plt.xlabel("Letras")
+    plt.ylabel("Frecuencia")
+    plt.show()
 
 def GenerateFile(result_file, destination_file):
 
     with open(destination_file, 'w', encoding="UTF-8") as f:
         for file in result_file:
+
             iterator = 0
             for values in file:
                 if iterator == 0:
@@ -135,6 +149,8 @@ def GenerateFile(result_file, destination_file):
                     for key, value in values.items():
                         f.write('%s : %s\n' % (key, value))
                 iterator = iterator+1
+
+
 
 #-----------------------------------------------------------------------------
 
