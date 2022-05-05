@@ -134,7 +134,6 @@ def GenerateHistogram(histogram):
     plt.title("Histograma")
     plt.xlabel("Letras")
     plt.ylabel("Frecuencia")
-    plt.show()
 
 def GenerateFile(result_file, destination_file):
 
@@ -203,3 +202,4 @@ if __name__ == '__main__':
     end_time = time.time()
     GenerateFile(final_result, "Result.txt")
     print("Execution time: ", (end_time - start_time))
+    plt.show()
