@@ -144,7 +144,7 @@ def GenerateFile(result_file, destination_file):
             for values in file:
                 if iterator == 0:
                     f.write('%s\n' % (values[0]))
-                    print('%s' % (values[0]))
+                    print('%s:' % (values[0]))
                 else:
                     for key, value in values.items():
                         f.write('%s : %s\n' % (key, value))
