@@ -130,7 +130,7 @@ def GenerateResult(list_words_letters_reduced, source_file):
     return list
 
 def GenerateHistogram(histogram):
-    plt.hist(histogram, bins=120, color="blue", rwidth=4)
+    plt.hist(histogram, bins=80, color="red", rwidth=1)
     plt.title("Histograma")
     plt.xlabel("Letras")
     plt.ylabel("Frecuencia")
@@ -144,9 +144,11 @@ def GenerateFile(result_file, destination_file):
             for values in file:
                 if iterator == 0:
                     f.write('%s\n' % (values[0]))
+                    print('%s' % (values[0]))
                 else:
                     for key, value in values.items():
                         f.write('%s : %s\n' % (key, value))
+                        print('%s : %s' % (key, value))
                 iterator = iterator+1
 
 
