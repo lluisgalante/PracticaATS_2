@@ -7,74 +7,41 @@ import argparse
 import sys
 import matplotlib.pyplot as plt
 
+total_words = []
 class MapReduce:
 
-    def Start(self, line):
-        return self.Splitting(line)
-
-    def Splitting(self, line):
+    def Start_Splitting(self, line):
         line = line.lower()
-        txt = line.replace("", "")
-        txt1 = txt.replace("\n", "")
-        txt2 = txt1.replace(".", "")
-        txt3 = txt2.replace("!", "")
-        txt4 = txt3.replace("?", "")
-        txt5 = txt4.replace("'", "")
-        txt6 = txt5.replace(",", "")
-        txt7 = txt6.replace(";", "")
-        txt8 = txt7.replace(":", "")
-        splitted_line = txt8.replace("-", "")
-        return self.Mapping(splitted_line)
+        return self.Mapping(line.replace("", "").replace("\n", "").replace(".", "").replace("!", "").replace("'", "").replace(",", "").replace(";", "").replace(":", "").replace("-", ""))
 
     def Mapping(self, line):
-        list_of_words = []
-        mapping_return =[]
-
+        word_dict = dict()
         for word in line.split():
-            list_of_words.append([word])
+            for letter in set(word):
+                total_words.append(letter)
+                if letter not in word_dict:
+                    word_dict[letter] = 1
+                else:
+                    word_dict[letter] += 1
 
-        for word in list_of_words:
-                for element in word:
-                    word_dict = dict()
-                    word_dict[element] = []
-                    for letter in element:
-                        word_dict[element].append([letter,1])
-                    mapping_return.append([word_dict])
+        return word_dict
 
-        return self.Shuffling(mapping_return)
+    def Shuffling(self, list_dict_letters):
+        #SECUENCIAL
+        dict_total = dict()
+        for dict_letters in list_dict_letters:
+            for letter in dict_letters:
+                if letter not in dict_total:
+                    dict_total[letter] = [dict_letters[letter]]
+                else:
+                    dict_total[letter].append(dict_letters[letter])
+        return dict_total
 
-    def Shuffling(self, lists_dict_words_letters):
-
-        list_shuffling_list=[]
-        for list_dict_words_letters in lists_dict_words_letters:
-            for word_dict in list_dict_words_letters:
-                list_key = list(word_dict.keys())
-                key = list_key[0]
-                for value in word_dict.values():
-                    non_repeated_dict = dict()
-                    for letter_int in value:
-                        for letter in letter_int:
-                            if isinstance(letter, str):
-                                if letter in non_repeated_dict:
-                                    non_repeated_dict[letter].append(1)
-                                else:
-                                    non_repeated_dict[letter] = [1]
-
-                    word_dict[key] = non_repeated_dict
-                list_shuffling_list.append(word_dict)
-
-        return self.Reducing(list_shuffling_list)
-
-
-
-
-    def Reducing(self, list_word_letters_shuffled ):
-
-        for word_dict in list_word_letters_shuffled:
-            for value in word_dict.values():
-                for letter in value:
-                    value[letter] = len(value[letter])
-        return list_word_letters_shuffled
+    def Reducing(self,  shuffled_dict):
+        # SECUENCIAL
+        for letter in shuffled_dict:
+            shuffled_dict[letter]= sum(shuffled_dict[letter])
+        return shuffled_dict
 
 #----------------------------------------------------------------------
 
@@ -96,38 +63,24 @@ def ReadFile(file_name):
     f.close()
     return file_lines
 
-def GenerateResult(list_words_letters_reduced, source_file):
-    sum_Words = 0
-    for list in list_words_letters_reduced:
-        sum_Words += len(list)
+def GenerateResult(reduced_dict, source_file):
 
-    histogram = []
+    sum_words = 0
+    porcentage_dict = dict()
+    for letter in reduced_dict:
+        sum_words += reduced_dict[letter]
+    print(sum_words)
+    for letter in reduced_dict:
+        numero = (reduced_dict[letter] / (162 * 500000)) * 100
+        string_numero = str(round(numero, 2)) + "%"
+        # string_numero_percentage = string_numero + "%"
+        reduced_dict[letter] = string_numero
 
-    print("Number of words: ",sum_Words)
-    letters_dictionary = dict()
+   # with open(source_file, 'w', encoding="UTF-8") as f:
+   #     f.write(source_file + '\n')
+   #     for key, value in reduced_dict.items():
+   #         f.write('%s : %s\n' % (key, value))
 
-    for list_dict in list_words_letters_reduced:
-        for word_dict in list_dict:
-            for value in word_dict.values():
-                for letter in value:
-                    histogram.append(letter)
-                    if letter in letters_dictionary:
-                        letters_dictionary[letter] = letters_dictionary[letter] + 1
-                    else:
-                        letters_dictionary[letter] = 1
-
-
-    for letter in letters_dictionary:
-        num = (letters_dictionary[letter] / sum_Words) * 100
-        num_percentage = str(round(num, 2)) + "%"
-        letters_dictionary[letter] = num_percentage
-
-    list = []
-    list.append([source_file])
-    list.append(letters_dictionary)
-
-    #GenerateHistogram(histogram)
-    return list
 
 def GenerateHistogram(histogram):
     plt.hist(histogram, bins=80, color="red", rwidth=1)
@@ -136,7 +89,6 @@ def GenerateHistogram(histogram):
     plt.ylabel("Frecuencia")
 
 def GenerateFile(result_file, destination_file):
-
     with open(destination_file, 'w', encoding="UTF-8") as f:
         for file in result_file:
 
@@ -156,19 +108,6 @@ def GenerateFile(result_file, destination_file):
 #-----------------------------------------------------------------------------
 
 if __name__ == '__main__':
-
-    """f = open("ArcTecSw_2022_BigData_Practica_Part1_Sample.txt", encoding="UTF-8")
-    file_lines = f.readlines()  # Reads all the lines and return them as each line a string element in a list
-    f.close()
-
-    new_file = []
-    for i in range(150000):
-        for line in file_lines:
-            new_file.append(line)
-
-    with open("Sample_150k.txt", 'w', encoding="UTF-8") as f:
-        for value in new_file:
-            f.write(value)"""
 
     parser = argparse.ArgumentParser()
     files = []
@@ -196,12 +135,34 @@ if __name__ == '__main__':
         input_file = ReadFile(file)
         MapReduced = MapReduce()
         p = Pool(multiprocessing.cpu_count())
-        reduced_list = p.map(MapReduced.Start, input_file)
-        final_result.append(GenerateResult(reduced_list, file))
+
+        start_time_ALL = time.time()
+        maped_list = p.map(MapReduced.Start_Splitting, input_file)
         p.close()
         p.join()
+        end_time = time.time()
+        print("Execution time Mapping: ", (end_time - start_time))
+        """del lines_500k"""
+        del input_file
+
+        start_time = time.time()
+        shuffled_dict = MapReduced.Shuffling(maped_list)
+        end_time = time.time()
+        print("Execution time Shuffling: ", (end_time - start_time))
+        del maped_list  # Elimina la variable
+
+        start_time = time.time()
+        reduced_list = MapReduced.Reducing(shuffled_dict)
+        final_result.append(GenerateResult(reduced_list, file))
+        del shuffled_dict
 
     end_time = time.time()
     GenerateFile(final_result, "Result.txt")
     print("Execution time: ", (end_time - start_time))
     plt.show()
+
+    end_time = time.time()
+    print("Execution time Reducing: ", (end_time - start_time))
+
+    end_time_ALL = time.time()
+    print("Execution time: ", (end_time_ALL - start_time_ALL))
