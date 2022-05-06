@@ -7,7 +7,7 @@ import argparse
 import sys
 import matplotlib.pyplot as plt
 
-total_words = []
+
 class MapReduce:
 
     def Start_Splitting(self, line):
@@ -15,15 +15,14 @@ class MapReduce:
         return self.Mapping(line.replace("", "").replace("\n", "").replace(".", "").replace("!", "").replace("'", "").replace(",", "").replace(";", "").replace(":", "").replace("-", ""))
 
     def Mapping(self, line):
+
         word_dict = dict()
         for word in line.split():
             for letter in set(word):
-                total_words.append(letter)
                 if letter not in word_dict:
                     word_dict[letter] = 1
                 else:
                     word_dict[letter] += 1
-
         return word_dict
 
     def Shuffling(self, list_dict_letters):
@@ -44,7 +43,12 @@ class MapReduce:
         return shuffled_dict
 
 #----------------------------------------------------------------------
+def WordCounter(input_file_lines):
 
+    t_w = 0
+    for line in input_file_lines:
+        t_w += len(line.split())
+    return t_w
 def ReadAndRedimensionFile(file_name, redimension):
     f = open(file_name, encoding="UTF-8")
     file_lines = f.readlines()  # Reads all the lines and return them as each line a string element in a list
@@ -63,24 +67,17 @@ def ReadFile(file_name):
     f.close()
     return file_lines
 
-def GenerateResult(reduced_dict, source_file):
-
-    sum_words = 0
-    porcentage_dict = dict()
+def GenerateResult(total_words,reduced_dict, source_file_name):
+    print(total_words)
     for letter in reduced_dict:
-        sum_words += reduced_dict[letter]
-    print(sum_words)
-    for letter in reduced_dict:
-        numero = (reduced_dict[letter] / (162 * 500000)) * 100
+        numero = (reduced_dict[letter] / total_words ) * 100
         string_numero = str(round(numero, 2)) + "%"
         # string_numero_percentage = string_numero + "%"
         reduced_dict[letter] = string_numero
-
    # with open(source_file, 'w', encoding="UTF-8") as f:
    #     f.write(source_file + '\n')
    #     for key, value in reduced_dict.items():
    #         f.write('%s : %s\n' % (key, value))
-
 
 def GenerateHistogram(histogram):
     plt.hist(histogram, bins=80, color="red", rwidth=1)
@@ -132,18 +129,19 @@ if __name__ == '__main__':
 
     start_time = time.time()
     for file in files:
-        input_file = ReadFile(file)
+
+        input_file_lines = ReadFile(file)
+        sum_words = WordCounter(input_file_lines)
         MapReduced = MapReduce()
         p = Pool(multiprocessing.cpu_count())
 
         start_time_ALL = time.time()
-        maped_list = p.map(MapReduced.Start_Splitting, input_file)
+        maped_list = p.map(MapReduced.Start_Splitting, input_file_lines)
         p.close()
         p.join()
         end_time = time.time()
         print("Execution time Mapping: ", (end_time - start_time))
-        """del lines_500k"""
-        del input_file
+        del input_file_lines
 
         start_time = time.time()
         shuffled_dict = MapReduced.Shuffling(maped_list)
@@ -153,8 +151,10 @@ if __name__ == '__main__':
 
         start_time = time.time()
         reduced_list = MapReduced.Reducing(shuffled_dict)
-        final_result.append(GenerateResult(reduced_list, file))
+
+        final_result.append(GenerateResult(sum_words,reduced_list, file))
         del shuffled_dict
+
 
     end_time = time.time()
     GenerateFile(final_result, "Result.txt")
