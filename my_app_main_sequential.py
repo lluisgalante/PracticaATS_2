@@ -7,29 +7,43 @@ import matplotlib.pyplot as plt
 
 class MapReduce:
 
-    def Start_Splitting(self, line):
-        line = line.lower()
-        return self.Mapping(line.replace("", "").replace("\n", "").replace(".", "").replace("!", "").replace("'", "").replace(",", "").replace(";", "").replace(":", "").replace("-", ""))
+    def Start_Splitting(self, lines):
+        list_file_lines_clean = []
+        for line in lines:
+            line = line.lower()
+            txt = line.replace("", "")
+            txt1 = txt.replace("\n", "")
+            txt2 = txt1.replace(".", "")
+            txt3 = txt2.replace("!", "")
+            txt4 = txt3.replace("?", "")
+            txt5 = txt4.replace("'", "")
+            txt6 = txt5.replace(",", "")
+            txt7 = txt6.replace(";", "")
+            txt8 = txt7.replace(":", "")
+            txt9 = txt8.replace("-", "")
+            list_file_lines_clean.append(txt9)
 
-    def Mapping(self, line):
+        return self.Mapping(list_file_lines_clean)
+
+    def Mapping(self, lines):
         word_dict = dict()
-        for word in line.split():
-            for letter in set(word):
-                if letter not in word_dict:
-                    word_dict[letter] = 1
-                else:
-                    word_dict[letter] += 1
+        for line in lines:
+            for word in line.split():
+                for letter in set(word):
+                    if letter not in word_dict:
+                        word_dict[letter] = 1
+                    else:
+                        word_dict[letter] += 1
         return word_dict
 
     def Shuffling(self, list_dict_letters):
-        #SECUENCIAL
+        # SECUENCIAL
         dict_total = dict()
-        for dict_letters in list_dict_letters:
-            for letter in dict_letters:
-                if letter not in dict_total:
-                    dict_total[letter] = [dict_letters[letter]]
-                else:
-                    dict_total[letter].append(dict_letters[letter])
+        for letter in list_dict_letters:
+            if letter not in dict_total:
+                dict_total[letter] = [list_dict_letters[letter]]
+            else:
+                dict_total[letter].append(list_dict_letters[letter])
         return dict_total
 
     def Reducing(self,  shuffled_dict):
@@ -60,16 +74,16 @@ def GenerateResultAndHistogram(total_words,reduced_dict, file_name):
     for value, key in reduced_dict.items():
         if iterator == 0:
             result.append(file_name)
-            print(file_name)
+            #print(file_name)
         else:
             histogramX.append(value)
             numero = (key / total_words) * 100
             histogramY.append(numero)
             string_numero = str(round(numero, 2)) + "%"
             result.append('%s : %s' % (value, string_numero))
-            print('%s : %s' % (value, string_numero))
+            #print('%s : %s' % (value, string_numero))
         iterator += 1
-
+    print(total_words)
     #GenerateHistogram(histogramX, histogramY)
     return result
 
