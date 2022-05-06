@@ -67,17 +67,22 @@ def ReadFile(file_name):
     f.close()
     return file_lines
 
-def GenerateResult(total_words,reduced_dict, source_file_name):
-    print(total_words)
-    for letter in reduced_dict:
-        numero = (reduced_dict[letter] / total_words ) * 100
-        string_numero = str(round(numero, 2)) + "%"
-        # string_numero_percentage = string_numero + "%"
-        reduced_dict[letter] = string_numero
-   # with open(source_file, 'w', encoding="UTF-8") as f:
-   #     f.write(source_file + '\n')
-   #     for key, value in reduced_dict.items():
-   #         f.write('%s : %s\n' % (key, value))
+def GenerateResult(total_words,reduced_dict, file_name):
+    result = []
+    iterator = 0
+    for value, key in reduced_dict.items():
+        if iterator == 0:
+            result.append(file_name)
+            print(file_name)
+        else:
+            numero = (key / total_words) * 100
+            string_numero = str(round(numero, 2)) + "%"
+            result.append('%s : %s' % (value, string_numero))
+            print('%s : %s' % (value, string_numero))
+        iterator+=1
+
+    return result
+
 
 def GenerateHistogram(histogram):
     plt.hist(histogram, bins=80, color="red", rwidth=1)
