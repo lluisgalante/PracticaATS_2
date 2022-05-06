@@ -119,10 +119,7 @@ if __name__ == '__main__':
         sum_words = WordCounter(input_file_lines)
 
         MapReduced = MapReduce()
-        p = Pool(multiprocessing.cpu_count())
-        mapped_list = p.map(MapReduced.Start_Splitting, input_file_lines)
-        p.close()
-        p.join()
+        mapped_list = MapReduced.Start_Splitting(input_file_lines)
         del input_file_lines
 
         shuffled_dict = MapReduced.Shuffling(mapped_list)
