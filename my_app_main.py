@@ -60,16 +60,15 @@ def GenerateResultAndHistogram(total_words,reduced_dict, file_name):
     for value, key in reduced_dict.items():
         if iterator == 0:
             result.append(file_name)
-            print(file_name)
         else:
             histogramX.append(value)
             numero = (key / total_words) * 100
             histogramY.append(numero)
             string_numero = str(round(numero, 2)) + "%"
             result.append('%s : %s' % (value, string_numero))
-            print('%s : %s' % (value, string_numero))
         iterator += 1
-
+    print("File name:", file_name)
+    print("Num words:", total_words)
     #GenerateHistogram(histogramX, histogramY)
     return result
 
