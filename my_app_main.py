@@ -69,10 +69,10 @@ def GenerateResult(total_words,reduced_dict, file_name):
     return result
 
 
-def GenerateHistogram(total_words,reduced_dict, histogram):
-    histogramX = []
-    histogramY = []
-    histograms = list()
+def GenerateHistogramData(total_words,reduced_dict, histogram):
+    histogramX = list()
+    histogramY = list()
+    histogram = list()
     iterator = 0
     for value, key in reduced_dict.items():
         if iterator != 0:
@@ -80,14 +80,10 @@ def GenerateHistogram(total_words,reduced_dict, histogram):
             numero = (key / total_words) * 100
             histogramY.append(numero)
         iterator += 1
+    histogram.append(histogramX)
+    histogram.append(histogramY)
 
-    histograms.append(sorted(histogramX))
-    histograms.append(histogramY)
-    if histogram == 'single':
-        plt.bar(histogramX, histogramY, align='center')  # A bar chart
-        plt.xlabel('Letters')
-        plt.ylabel('Frequency(%)')
-    return histograms
+    return histogram
 
 def GenerateFile(result_file, destination_file):
 
@@ -96,24 +92,18 @@ def GenerateFile(result_file, destination_file):
             for data in file:
                 f.write('%s\n' % data)
 
-def GenerateMultipleHistogram(histograms):
+def GenerateHistogram(histograms):
+    for i in range(0,len(histograms)):
+        if i == 0:
+            plt.bar(histograms[i][0], histograms[i][1], label='First file')
+        if i == 1:
+            plt.bar(histograms[i][0], histograms[i][1], label='Second file')
+        if i == 2:
+            plt.bar(histograms[i][0], histograms[i][1], label='Third File')
 
-    counter_file = 0
-    for i in range(0,len(histograms)-1):
-        print(len(histograms))
-        if counter_file == 0:
-            plt.bar(histograms[counter_file][i], histograms[counter_file][i + 1], label='First file')
-            counter_file += 1
-        if counter_file == 1:
-            plt.bar(histograms[counter_file][i], histograms[counter_file][i + 1], label='Second file')
-            counter_file += 1
-        else:
-            plt.bar(histograms[counter_file][i], histograms[counter_file][i+1], label='Extra File')
-
-        print(counter_file)
-        plt.xlabel('Letters')
-        plt.ylabel('Frequency(%)')
-        plt.legend()
+    plt.xlabel('Letters')
+    plt.ylabel('Frequency(%)')
+    plt.legend()
 
 #----------------------------------------------------------------------
 
@@ -127,7 +117,7 @@ if __name__ == '__main__':
     source = "sourcefileN"
     for i in range(len(sys.argv)-1):
         if i == 0:
-            parser.add_argument("histogram", help="single/all/no")
+            parser.add_argument("histogram", help="yes/no")
         else:
             final_source = source.replace("N",str(i))
             parser.add_argument(final_source, help="enter correct file name")
@@ -163,12 +153,12 @@ if __name__ == '__main__':
         reduced_list = MapReduced.Reducing(shuffled_dict)
 
         final_result.append(GenerateResult(sum_words,reduced_list, file))
-        histogram_list.append(GenerateHistogram(sum_words, reduced_list, args.histogram))
+        histogram_list.append(GenerateHistogramData(sum_words, reduced_list, args.histogram))
         del shuffled_dict
 
     GenerateFile(final_result, "Result.txt")
-    if args.histogram == 'multiple':
-        GenerateMultipleHistogram(histogram_list)
+    if args.histogram == 'yes':
+        GenerateHistogram(histogram_list)
     plt.show()
 
     end_time = time.time()
