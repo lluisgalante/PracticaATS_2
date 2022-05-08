@@ -37,12 +37,11 @@ class MapReduce:
                     dict_shuffled[letter].append(dict_letters[letter])
         return dict_shuffled
 
-    def Reducing(self, shuffle_dict):
+    def Reducing(self, shuffled_dict):
         """ Sum all values from the same key. This dict allows to know all the times a letter on file words """
-        for letter in shuffle_dict:
-            shuffle_dict[letter] = sum(shuffle_dict[letter])
-        print(shuffle_dict)
-        return shuffle_dict
+        for letter in shuffled_dict:
+            shuffled_dict[letter] = sum(shuffled_dict[letter])
+        return shuffled_dict
 
 
 class DataManager:
@@ -121,23 +120,21 @@ class HistogramGenerator:
         plt.show()
 
 
-if __name__ == "__main__":
-    """ 1 - Create objects of different classes and a list to save file names"""
+def main():
+    # 1 - Create objects of different classes and a list to save file names
     data = DataManager()
     histogram = HistogramGenerator()
     mapReduced = MapReduce()
     files_name = list()
 
-    """ 2 - Manage parameters and program configuration"""
+    # 2 - Manage parameters and program configuration
     source = "filenameN"  # This 'N' character will be replaced for the number of file sent by parameters
     args_histogram = sys.argv[1]
-
     for i in range(2, len(sys.argv)):
         files_name.append(sys.argv[i])
 
     start_time = time.time()
-
-    """ 3 - Map reduce from every file introduced on arguments"""
+    # 3 - Map reduce from every file introduced on arguments
     for file in files_name:
         input_file_lines = data.ReadFile(file)
         sum_words = data.WordCounter(input_file_lines)
@@ -157,14 +154,21 @@ if __name__ == "__main__":
         reduced_list = mapReduced.Reducing(shuffled_dict)
         del shuffled_dict  # Eliminate list in order to clean memory
 
+        # 3.4 Save and generate data
         data.GenerateResult(sum_words, reduced_list, file)
         histogram.GenerateHistogramData(sum_words, reduced_list)
-        del shuffled_dict  # Eliminate list in order to clean memory
+    end_time = time.time()
 
-    """ 4- Write result and generate histogram if parameter is 'yes' """
+    # 4- Write result and generate histogram if parameter is 'yes'
     data.PrintAndWriteFileResult("Result.txt")
     if args_histogram == 'yes':
         histogram.GenerateHistogram()
 
-    end_time = time.time()
     print("Execution time: ", (end_time - start_time))
+
+
+if __name__ == "__main__":
+    if len(sys.argv) <= 2:  # First argument is always my_app_main.py and it's required to introduce almost 2 more
+        print("Incorrect number or arguments")
+    else:
+        main()
