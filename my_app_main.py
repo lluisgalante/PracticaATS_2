@@ -1,9 +1,8 @@
 import multiprocessing
 import time
 from multiprocessing import Pool
-import argparse
-import sys
 import matplotlib.pyplot as plt
+import sys
 
 
 class MapReduce:
@@ -119,62 +118,53 @@ class HistogramGenerator:
         plt.xlabel('Letters')
         plt.ylabel('Frequency(%)')
         plt.legend()
+        plt.show()
 
 
-if __name__ == '__main__':
-
+if __name__ == "__main__":
+    """ 1 - Create objects of different classes and a list to save file names"""
     data = DataManager()
     histogram = HistogramGenerator()
     mapReduced = MapReduce()
-
     files_name = list()
 
-    source = "filenameN"
-    parser = argparse.ArgumentParser()
-    for i in range(len(sys.argv) - 1):
-        if i == 0:
-            parser.add_argument("histogram", help="yes/no")
-        else:
-            final_source = source.replace("N", str(i))
-            parser.add_argument(final_source, help="enter correct file name")
+    """ 2 - Manage parameters and program configuration"""
+    source = "filenameN"  # This 'N' character will be replaced for the number of file sent by parameters
+    args_histogram = sys.argv[1]
 
-    args = parser.parse_args()
-
-    if len(sys.argv) - 2 == 1:
-        files_name.append(args.filename1)
-    if len(sys.argv) - 2 == 2:
-        files_name.append(args.filename1)
-        files_name.append(args.filename2)
-    if len(sys.argv) - 2 == 3:
-        files_name.append(args.filename1)
-        files_name.append(args.filename2)
-        files_name.append(args.filename3)
+    for i in range(2, len(sys.argv)):
+        files_name.append(sys.argv[i])
 
     start_time = time.time()
+
+    """ 3 - Map reduce from every file introduced on arguments"""
     for file in files_name:
         input_file_lines = data.ReadFile(file)
         sum_words = data.WordCounter(input_file_lines)
 
-        p = Pool(multiprocessing.cpu_count())
+        # 3.1 Mapping
+        p = Pool(multiprocessing.cpu_count())  # Parallelize function
         mapped_list = p.map(mapReduced.CleanAndMapFile, input_file_lines)
         p.close()
         p.join()
-        del input_file_lines
+        del input_file_lines  # Eliminate list in order to clean memory
 
+        # 3.2 Shuffling
         shuffled_dict = mapReduced.Shuffling(mapped_list)
-        del mapped_list  # Elimina la variable
+        del mapped_list  # Eliminate list in order to clean memory
 
+        # 3.3 Reducing
         reduced_list = mapReduced.Reducing(shuffled_dict)
+        del shuffled_dict  # Eliminate list in order to clean memory
 
         data.GenerateResult(sum_words, reduced_list, file)
         histogram.GenerateHistogramData(sum_words, reduced_list)
-        del shuffled_dict
+        del shuffled_dict  # Eliminate list in order to clean memory
 
+    """ 4- Write result and generate histogram if parameter is 'yes' """
     data.PrintAndWriteFileResult("Result.txt")
-    if args.histogram == 'yes':
+    if args_histogram == 'yes':
         histogram.GenerateHistogram()
-
-    plt.show()
 
     end_time = time.time()
     print("Execution time: ", (end_time - start_time))
