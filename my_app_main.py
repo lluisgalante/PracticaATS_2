@@ -4,78 +4,87 @@ from multiprocessing import Pool
 import argparse
 import sys
 import matplotlib.pyplot as plt
-import numpy as np
 
 
 class MapReduce:
 
     def CleanAndMapFile(self, line):
+        """ Replace all 'no words' values from a file that we do not want to map reduce.
+         Once our file lines are cleaned those files will be redirected to mapping function """
         line = line.lower()
         return self.Mapping(line.replace("", "").replace("\n", "").replace(".", "").replace("!", "")
                             .replace("'", "").replace(",", "").replace(";", "").replace(":", "").replace("-", ""))
 
     def Mapping(self, line):
+        """ Receive file lines and create a dictionary that records the number of times a same letter
+        is repeated on different words of the file"""
         word_dict = dict()
         for word in line.split():
             for letter in set(word):
                 if letter not in word_dict:
                     word_dict[letter] = 1
                 else:
-                    word_dict[letter] += 1
+                    word_dict[letter] += 1  # If already exists on dictionary we use existent key
         return word_dict
 
     def Shuffling(self, list_dict_letters):
-        # SECUENCIAL
-        dict_total = dict()
+        """ Once the list is mapped this function joins all letters with same 'key' and his values in one key """
+        dict_shuffled = dict()
         for dict_letters in list_dict_letters:
             for letter in dict_letters:
-                if letter not in dict_total:
-                    dict_total[letter] = [dict_letters[letter]]
+                if letter not in dict_shuffled:
+                    dict_shuffled[letter] = [dict_letters[letter]]
                 else:
-                    dict_total[letter].append(dict_letters[letter])
-        return dict_total
+                    dict_shuffled[letter].append(dict_letters[letter])
+        return dict_shuffled
 
-    def Reducing(self, shuffled_dict):
-        # SECUENCIAL
-        for letter in shuffled_dict:
-            shuffled_dict[letter] = sum(shuffled_dict[letter])
-        return shuffled_dict
+    def Reducing(self, shuffle_dict):
+        """ Sum all values from the same key. This dict allows to know all the times a letter on file words """
+        for letter in shuffle_dict:
+            shuffle_dict[letter] = sum(shuffle_dict[letter])
+        print(shuffle_dict)
+        return shuffle_dict
 
 
 class DataManager:
 
     def __init__(self):
-        self.final_result = list()
+        self.final_result = list()  # List were the final result will be saved
 
     def ReadFile(self, file_name):
+        """ From a given file reads all the lines and return them as each line a string element in a list """
         f = open(file_name, encoding="UTF-8")
-        file_lines = f.readlines()  # Reads all the lines and return them as each line a string element in a list
+        file_lines = f.readlines()
         f.close()
         return file_lines
 
-    def WordCounter(self, input_file_lines):
+    def WordCounter(self, file_lines):
+        """ Counter of the words inside a single file. This will allow us
+         to eventually generate the percentage of a value """
         total_words = 0
-        for line in input_file_lines:
+        for line in file_lines:
             total_words += len(line.split())
         return total_words
 
     def GenerateResult(self, total_words, reduced_dict, file_name):
+        """ Generate result of a given map reduced dict. Key represents the letter and value
+        the times that this letter appears on words of the file"""
         result = list()
         iterator = 0
         for value, key in reduced_dict.items():
             if iterator == 0:
-                result.append(file_name)
+                result.append(file_name)  # First we save the name of the file
             else:
                 number = (key / total_words) * 100
-                percentage_number = str(round(number, 2)) + "%"
+                percentage_number = str(round(number, 2)) + "%"  # Convert number of times to percentage
                 result.append('%s : %s' % (value, percentage_number))
             iterator += 1
         print("File name:", file_name)
         print("Num words:", total_words)
-
         self.final_result.append(result)
 
     def PrintAndWriteFileResult(self, destination_file):
+        """ Print data result on screen and write this data in a result file """
         with open(destination_file, 'w', encoding="UTF-8") as f:
             for file_result in self.final_result:
                 for data_result in file_result:
@@ -85,31 +94,28 @@ class DataManager:
 
 class HistogramGenerator:
     def __init__(self):
-        self.histogram_list = list()
+        self.histograms_list = list()  # List to store all histograms data
 
     def GenerateHistogramData(self, total_words, reduced_dict):
+        """ Generate histogram data from each file.
+        This data of each histogram will be appended to class histograms_list"""
         histogram_x = list()
         histogram_y = list()
         histogram_xy = list()
-        iterator = 0
         for value, key in reduced_dict.items():
-            if iterator != 0:
-                histogram_x.append(value)
-                number = (key / total_words) * 100
-                histogram_y.append(number)
-            iterator += 1
+            histogram_x.append(value)
+            number = (key / total_words) * 100
+            histogram_y.append(number)
         histogram_xy.append(histogram_x)
         histogram_xy.append(histogram_y)
-
-        self.histogram_list.append(histogram)
+        self.histograms_list.append(histogram_xy)
 
     def GenerateHistogram(self):
         """ Generate a Histogram based on 'n' files """
         legends = 'File n'
-        for i in range(0, len(self.histogram_list)):
-            plt.bar(self.histogram_list[i][0], self.histogram_list[i][1],
+        for i in range(0, len(self.histograms_list)):
+            plt.bar(self.histograms_list[i][0], self.histograms_list[i][1],
                     label=legends.replace("n", str(i + 1)))  # Diff colour of each bar will be assigned automatically
-
         plt.xlabel('Letters')
         plt.ylabel('Frequency(%)')
         plt.legend()
