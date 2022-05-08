@@ -128,8 +128,7 @@ def main():
     files_name = list()
 
     # 2 - Manage parameters and program configuration
-    args_histogram = sys.argv[1]
-    for i in range(2, len(sys.argv)):
+    for i in range(1, len(sys.argv)):
         files_name.append(sys.argv[i])
 
     start_time = time.time()
@@ -160,14 +159,13 @@ def main():
 
     # 4- Write result and generate histogram if parameter is 'yes'
     data.PrintAndWriteFileResult("Result.txt")
-    if args_histogram == 'yes':
-        histogram.GenerateHistogram()
+    histogram.GenerateHistogram()
 
     print("Execution time: ", (end_time - start_time))
 
 
 if __name__ == "__main__":
-    if len(sys.argv) <= 2:  # First argument is always my_app_main.py and it's required to introduce almost 2 more
+    if len(sys.argv) <= 1:  # First argument is always my_app_main.py and it's required to introduce almost 1 more
         print("Incorrect number or arguments")
     else:
         main()
