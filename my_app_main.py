@@ -1,5 +1,4 @@
 import multiprocessing
-import time
 from multiprocessing import Pool
 import matplotlib.pyplot as plt
 import sys
@@ -118,6 +117,7 @@ class HistogramGenerator:
 
 
 def main():
+
     # 1 - Create objects of different classes and a list to save file names
     data = DataManager()
     histogram = HistogramGenerator()
@@ -128,7 +128,6 @@ def main():
     for i in range(1, len(sys.argv)):
         files_name.append(sys.argv[i])
 
-    start_time = time.time()
     # 3 - Map reduce from every file introduced on arguments
     for file in files_name:
         input_file_lines = data.ReadFile(file)
@@ -152,16 +151,15 @@ def main():
         # 3.4 Save and generate data
         data.GenerateResult(sum_words, reduced_list, file)
         histogram.GenerateHistogramData(sum_words, reduced_list)
-    end_time = time.time()
 
     # 4- Write result and generate histogram if parameter is 'yes'
     data.PrintAndWriteFileResult("Result.txt")
     histogram.GenerateHistogram()
-
-    print("Execution time: ", (end_time - start_time))
     plt.show()  # Show histogram
 
+
 if __name__ == "__main__":
+
     if len(sys.argv) <= 1:  # First argument is always my_app_main.py and it's required to introduce almost 1 more
         print("Incorrect number or arguments")
     else:
