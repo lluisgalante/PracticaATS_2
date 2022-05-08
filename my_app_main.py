@@ -77,7 +77,6 @@ class DataManager:
                 percentage_number = str(round(number, 2)) + "%"  # Convert number of times to percentage
                 result.append('%s : %s' % (value, percentage_number))
             iterator += 1
-        print("File name:", file_name)
         print("Num words:", total_words)
         self.final_result.append(result)
 
@@ -117,7 +116,6 @@ class HistogramGenerator:
         plt.xlabel('Letters')
         plt.ylabel('Frequency(%)')
         plt.legend()
-        plt.show()
 
 
 def main():
@@ -162,7 +160,7 @@ def main():
     histogram.GenerateHistogram()
 
     print("Execution time: ", (end_time - start_time))
-
+    plt.show()  # Show histogram
 
 if __name__ == "__main__":
     if len(sys.argv) <= 1:  # First argument is always my_app_main.py and it's required to introduce almost 1 more
