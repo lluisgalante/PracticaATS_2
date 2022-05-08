@@ -31,6 +31,7 @@ class MapReduce:
         """ Receive file lines and create a dictionary that records the number of times a same letter
         is repeated on different words of the file"""
         word_dict = dict()
+
         for line in lines:
             for word in line.split():
                 for letter in set(word):
@@ -38,7 +39,7 @@ class MapReduce:
                         word_dict[letter] = 1
                     else:
                         word_dict[letter] += 1  # If already exists on dictionary we use existent key
-            return word_dict
+        return word_dict
 
     def Shuffling(self, list_dict_letters):
         """ Once the list is mapped this function joins all letters with same 'key' and his values in one key """
@@ -90,7 +91,6 @@ class DataManager:
                 percentage_number = str(round(number, 2)) + "%"  # Convert number of times to percentage
                 result.append('%s : %s' % (value, percentage_number))
             iterator += 1
-        print("Num words:", total_words)
         self.final_result.append(result)
 
     def PrintAndWriteFileResult(self, destination_file):

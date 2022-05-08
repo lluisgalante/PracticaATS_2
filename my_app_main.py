@@ -77,7 +77,6 @@ class DataManager:
                 percentage_number = str(round(number, 2)) + "%"  # Convert number of times to percentage
                 result.append('%s : %s' % (value, percentage_number))
             iterator += 1
-        print("Num words:", total_words)
         self.final_result.append(result)
 
     def PrintAndWriteFileResult(self, destination_file):
