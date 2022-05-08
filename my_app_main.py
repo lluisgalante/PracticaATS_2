@@ -128,7 +128,6 @@ def main():
     files_name = list()
 
     # 2 - Manage parameters and program configuration
-    source = "filenameN"  # This 'N' character will be replaced for the number of file sent by parameters
     args_histogram = sys.argv[1]
     for i in range(2, len(sys.argv)):
         files_name.append(sys.argv[i])
